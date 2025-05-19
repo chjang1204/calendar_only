@@ -1,0 +1,111 @@
+openapi: 3.1.0
+info:
+  title: GPT Google Calendar API
+  version: 1.0.0
+  description: API for integrating GPT with Google Calendar using Flask
+
+servers:
+  - url: https://calendar-only.onrender.com/
+    description: Render-deployed Flask server
+
+paths:
+  /:
+    get:
+      operationId: getIndex
+      summary: Index
+      description: Returns server status
+      responses:
+        '200':
+          description: Server is running
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /auth:
+    get:
+      operationId: startOAuth
+      summary: Start OAuth Flow
+      description: Redirects the user to Google's OAuth 2.0 server
+      responses:
+        '302':
+          description: Redirect to Google authorization URL
+
+  /oauth2callback:
+    get:
+      operationId: handleOAuthCallback
+      summary: OAuth Callback
+      description: Handles the authorization code and retrieves access/refresh tokens
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Returns token information
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /list-events:
+    get:
+      operationId: listEvents
+      summary: List Calendar Events
+      description: Retrieves a list of events from the user's primary calendar
+      responses:
+        '200':
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Access token missing
+
+  /create-event:
+    post:
+      operationId: createEvent
+      summary: Create Calendar Event
+      description: Creates a new event in the user's primary calendar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                summary:
+                  type: string
+                description:
+                  type: string
+                start:
+                  type: string
+                  format: date-time
+                end:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Created event data
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Access token missing
+
+  /debug-env:
+    get:
+      operationId: debugEnvironment
+      summary: Debug Environment Variables
+      description: Shows current environment settings for CLIENT_ID and REDIRECT_URI
+      responses:
+        '200':
+          description: Environment variables
+          content:
+            application/json:
+              schema:
+                type: object
