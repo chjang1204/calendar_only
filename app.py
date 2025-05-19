@@ -1,4 +1,5 @@
 from flask import Flask, request, redirect, jsonify
+from datetime import datetime
 import os
 import requests
 
@@ -113,7 +114,7 @@ def list_events():
 
     calendar_url = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
     headers = {"Authorization": f"Bearer {access_token}"}
-    params = {"maxResults": 5, "orderBy": "startTime", "singleEvents": True}
+    params = {"maxResults": 5, "orderBy": "startTime", "singleEvents": True, "timeMin": datetime.utcnow().isoformat() + "Z"}
 
     res = requests.get(calendar_url, headers=headers, params=params)
     return res.json()
