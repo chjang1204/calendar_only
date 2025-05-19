@@ -66,6 +66,14 @@ def list_events():
     res = requests.get(calendar_url, headers=headers, params=params)
     return res.json()
 
+# 환경 변수 확인
+@app.route("/debug-env", methods=["GET"])
+def debug_env():
+    return {
+        "CLIENT_ID": CLIENT_ID,
+        "REDIRECT_URI": REDIRECT_URI
+    }
+    
 # 이벤트 생성
 @app.route("/create-event", methods=["POST"])
 def create_event():
