@@ -52,6 +52,51 @@ def oauth2callback():
 
     return jsonify(token_response)
 
+
+@app.route('/gpt-action', methods=['POST'])
+def gpt_action():
+    data = request.get_json()
+    action = data.get("action")
+    access_token = TOKENS.get("access_token")
+
+    if not access_token:
+        return {"error": "No access token found. Please authenticate via /auth"}, 401
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    if action == "list_events":
+        response = requests.get(
+            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+            headers=headers,
+            params={
+                "maxResults": 5,
+                "orderBy": "startTime",
+                "singleEvents": True,
+                "timeMin": "2025-01-01T00:00:00Z"
+            }
+        )
+        return response.json()
+
+    elif action == "create_event":
+        event = {
+            "summary": data.get("summary", "GPT 일정"),
+            "start": {"dateTime": data.get("start"), "timeZone": "Asia/Seoul"},
+            "end": {"dateTime": data.get("end"), "timeZone": "Asia/Seoul"}
+        }
+        response = requests.post(
+            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+            headers=headers,
+            json=event
+        )
+        return response.json()
+
+    else:
+        return {"error": "Invalid action"}, 400
+
+
 # 이벤트 조회
 @app.route("/list-events", methods=["GET"])
 def list_events():
