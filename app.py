@@ -106,6 +106,8 @@ def list_gmail():
     if not access_token:
         return {"error": "Access token missing. Please authenticate."}, 401
 
+    query = request.args.get("q", "")  # 검색 조건 추가
+
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
@@ -114,6 +116,9 @@ def list_gmail():
     # 메시지 목록 조회
     messages_url = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
     params = {"maxResults": 5}
+    if query:
+        params["q"] = query
+
     res = requests.get(messages_url, headers=headers, params=params)
     msg_list = res.json()
 
@@ -131,4 +136,5 @@ def list_gmail():
         return {"message": "No Gmail messages found."}
 
     return jsonify(results)
+
     
