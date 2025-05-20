@@ -99,7 +99,7 @@ def create_event():
     res = requests.post(calendar_url, headers=headers, json=event)
     return res.json()
 
-# Gmail 메시지 20건 조회
+# Gmail 메시지 조회
 @app.route("/list_gmail", methods=["GET"])
 def list_gmail():
     access_token = TOKENS.get("access_token")
@@ -113,7 +113,7 @@ def list_gmail():
 
     # 메시지 목록 조회
     messages_url = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
-    params = {"maxResults": 20}
+    params = {"maxResults": 5}
     res = requests.get(messages_url, headers=headers, params=params)
     msg_list = res.json()
 
