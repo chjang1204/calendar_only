@@ -112,7 +112,7 @@ def list_gmail():
     }
 
     # 메시지 목록 조회
-    messages_url = "https://www.googleapis.com/gmail/v1/users/me/messages"
+    messages_url = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
     params = {"maxResults": 5}
     res = requests.get(messages_url, headers=headers, params=params)
     msg_list = res.json()
