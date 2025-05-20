@@ -112,17 +112,32 @@ def list_gmail():
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
+from flask import Flask, request, jsonify
+import requests
+
+@app.route("/list_gmail", methods=["GET"])
+def list_gmail():
+    access_token = TOKENS.get("access_token")
+    if not access_token:
+        return {"error": "Access token missing. Please authenticate."}, 401
+
+    query = request.args.get("q", "")  # 검색 조건 추가
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
 
     # 메시지 목록 조회
     messages_url = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
-    params = {"maxResults": 5}
+    params = {"maxResults": 10}
     if query:
         params["q"] = query
 
     res = requests.get(messages_url, headers=headers, params=params)
     msg_list = res.json()
 
-    # 각 메시지의 요약(snippet) 조회
+    # 각 메시지의 세부 정보 조회
     results = []
     if "messages" in msg_list:
         for msg in msg_list["messages"]:
@@ -130,11 +145,25 @@ def list_gmail():
             msg_detail_url = f"https://gmail.googleapis.com/gmail/v1/users/me/messages/{msg_id}"
             detail_res = requests.get(msg_detail_url, headers=headers)
             detail_json = detail_res.json()
+
             snippet = detail_json.get("snippet", "")
-            results.append({"id": msg_id, "snippet": snippet})
+            headers_list = detail_json.get("payload", {}).get("headers", [])
+
+            subject = next((h["value"] for h in headers_list if h["name"] == "Subject"), "(No Subject)")
+            sender = next((h["value"] for h in headers_list if h["name"] == "From"), "(No Sender)")
+            date = next((h["value"] for h in headers_list if h["name"] == "Date"), "(No Date)")
+
+            results.append({
+                "id": msg_id,
+                "subject": subject,
+                "from": sender,
+                "date": date,
+                "snippet": snippet
+            })
     else:
         return {"message": "No Gmail messages found."}
 
     return jsonify(results)
+
 
     
