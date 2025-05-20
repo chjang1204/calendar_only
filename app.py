@@ -112,21 +112,6 @@ def list_gmail():
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
-from flask import Flask, request, jsonify
-import requests
-
-@app.route("/list_gmail", methods=["GET"])
-def list_gmail():
-    access_token = TOKENS.get("access_token")
-    if not access_token:
-        return {"error": "Access token missing. Please authenticate."}, 401
-
-    query = request.args.get("q", "")  # 검색 조건 추가
-
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
 
     # 메시지 목록 조회
     messages_url = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
