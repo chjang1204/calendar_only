@@ -7,9 +7,10 @@
 - Google OAuth 2.0 인증
 - 일정 조회 (/list-events)
 - 일정 생성 (/create-event)
-
+- G메일 조회 (/list_gmail)
+ 
 ## 사용법
 
 1. Google Cloud에서 OAuth 클라이언트 생성
-2. `.env` 또는 Render 환경 변수에 CLIENT_ID, CLIENT_SECRET, REDIRECT_URI 설정
+2. Render 환경 변수에 CLIENT_ID, CLIENT_SECRET, REDIRECT_URI 설정
 3. `/auth` 경로로 이동하여 인증
