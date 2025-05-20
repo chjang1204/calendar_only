@@ -53,50 +53,6 @@ def oauth2callback():
 
     return jsonify(token_response)
 
-
-@app.route('/gpt-action', methods=['POST'])
-def gpt_action():
-    data = request.get_json()
-    action = data.get("action")
-    access_token = TOKENS.get("access_token")
-
-    if not access_token:
-        return {"error": "No access token found. Please authenticate via /auth"}, 401
-
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
-
-    if action == "list_events":
-        response = requests.get(
-            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-            headers=headers,
-            params={
-                "maxResults": 5,
-                "orderBy": "startTime",
-                "singleEvents": True,
-                "timeMin": "2025-01-01T00:00:00Z"
-            }
-        )
-        return response.json()
-
-    elif action == "create_event":
-        event = {
-            "summary": data.get("summary", "GPT 일정"),
-            "start": {"dateTime": data.get("start"), "timeZone": "Asia/Seoul"},
-            "end": {"dateTime": data.get("end"), "timeZone": "Asia/Seoul"}
-        }
-        response = requests.post(
-            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-            headers=headers,
-            json=event
-        )
-        return response.json()
-
-    else:
-        return {"error": "Invalid action"}, 400
-
 # 환경 변수 확인
 @app.route("/debug-env", methods=["GET"])
 def debug_env():
@@ -142,3 +98,37 @@ def create_event():
 
     res = requests.post(calendar_url, headers=headers, json=event)
     return res.json()
+
+# Gmail 메시지 20건 조회
+@app.route("/list_gmail", methods=["GET"])
+def list_gmail():
+    access_token = TOKENS.get("access_token")
+    if not access_token:
+        return {"error": "Access token missing. Please authenticate."}, 401
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    # 메시지 목록 조회
+    messages_url = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
+    params = {"maxResults": 20}
+    res = requests.get(messages_url, headers=headers, params=params)
+    msg_list = res.json()
+
+    # 각 메시지의 요약(snippet) 조회
+    results = []
+    if "messages" in msg_list:
+        for msg in msg_list["messages"]:
+            msg_id = msg["id"]
+            msg_detail_url = f"https://gmail.googleapis.com/gmail/v1/users/me/messages/{msg_id}"
+            detail_res = requests.get(msg_detail_url, headers=headers)
+            detail_json = detail_res.json()
+            snippet = detail_json.get("snippet", "")
+            results.append({"id": msg_id, "snippet": snippet})
+    else:
+        return {"message": "No Gmail messages found."}
+
+    return jsonify(results)
+    
