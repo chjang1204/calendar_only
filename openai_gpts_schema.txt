@@ -5,7 +5,7 @@ info:
   description: API for integrating GPT with Google Calendar using Flask
 
 servers:
-  - url: https://calendar-only.onrender.com/
+  - url: https://calendar-only.onrender.com
     description: Render-deployed Flask server
 
 paths:
