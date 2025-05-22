@@ -54,7 +54,22 @@ paths:
     get:
       operationId: listEvents
       summary: List Calendar Events
-      description: Retrieves a list of events from the user's primary calendar
+      description: Retrieves a list of events from the user's primary calendar. Optionally filter by start and end datetime.
+      parameters:
+        - in: query
+          name: start
+          schema:
+            type: string
+            format: date 
+          required: false
+          description: Start date (e.g. 2025-05-22)
+        - in: query
+          name: end
+          schema:
+            type: string
+            format: date 
+          required: false
+          description: End date (e.g. 2025-05-23)
       responses:
         '200':
           description: List of events
@@ -101,7 +116,14 @@ paths:
     get:
       operationId: listGmail
       summary: List Recent Gmail Messages
-      description: Retrieves the 5 most recent email snippets from the user's Gmail inbox
+      description: Retrieves the 5 most recent email snippets from the user's Gmail inbox. Supports Gmail search query via 'q' parameter.
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          required: false
+          description: Gmail search query (e.g., 'subject:Render', 'from:google.com', 'after:2025/05/01', 'has:attachment')
       responses:
         '200':
           description: List of Gmail message snippets
@@ -120,7 +142,7 @@ paths:
                       description: Short preview of the email
         '401':
           description: Access token missing
-
+ 
   /debug-env:
     get:
       operationId: debugEnvironment
