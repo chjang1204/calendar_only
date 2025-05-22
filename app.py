@@ -1,5 +1,5 @@
 from flask import Flask, request, redirect, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import requests
 
@@ -68,11 +68,40 @@ def list_events():
     if not access_token:
         return {"error": "Access token missing. Please authenticate."}, 401
 
+    # 시작일과 종료일 파라미터 받기
+    start_str = request.args.get("start")
+    end_str = request.args.get("end")
+
+    try:
+        if start_str:
+            start_date = datetime.strptime(start_str, "%Y-%m-%d")
+        else:
+            start_date = datetime.utcnow()
+
+        if end_str:
+            end_date = datetime.strptime(end_str, "%Y-%m-%d")
+        else:
+            end_date = start_date + timedelta(days=7)
+    except ValueError:
+        return {"error": "Invalid date format. Use YYYY-MM-DD for 'start' and 'end'."}, 400
+
+    time_min = start_date.isoformat() + "Z"
+    time_max = end_date.isoformat() + "Z"
+
     calendar_url = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
     headers = {"Authorization": f"Bearer {access_token}"}
-    params = {"maxResults": 5, "orderBy": "startTime", "singleEvents": True, "timeMin": datetime.utcnow().isoformat() + "Z"}
+    params = {
+        "maxResults": 50,
+        "orderBy": "startTime",
+        "singleEvents": True,
+        "timeMin": time_min,
+        "timeMax": time_max
+    }
 
     res = requests.get(calendar_url, headers=headers, params=params)
+    if res.status_code != 200:
+        return {"error": "Failed to fetch events", "details": res.json()}, res.status_code
+
     return res.json()
     
 # 이벤트 생성
